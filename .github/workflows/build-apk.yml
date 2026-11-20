@@ -16,8 +16,8 @@ jobs:
 
       - name: Extrair projeto Android
         run: |
-          unzip berserker-arena-android.zip -d projeto
-          cp -R projeto/. .
+          mkdir android-project
+          unzip -q berserker-arena-android.zip -d android-project
 
       - name: Configurar Java
         uses: actions/setup-java@v4
@@ -25,19 +25,20 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Configurar Android
-        uses: android-actions/setup-android@v3
-
-      - name: Instalar SDK
-        run: sdkmanager "platforms;android-34" "build-tools;34.0.0"
+      - name: Configurar Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
 
       - name: Compilar APK
-        run: |
-          gradle assembleDebug --no-daemon
+        working-directory: android-project
+        run: gradle assembleDebug --no-daemon
 
-      - name: Disponibilizar APK
+      - name: Salvar APK
         uses: actions/upload-artifact@v4
         with:
           name: berserker-arena-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: android-project/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          
           
